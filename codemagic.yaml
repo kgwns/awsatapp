@@ -1,26 +1,17 @@
-workflows:
-  react-native-app:
-    name: Build React Native Android App
-    max_build_duration: 30
-    environment:
-      vars:
-        NODE_ENV: production
-      node: 20
-      java: 17
-    scripts:
-      - name: Install dependencies
-        script: |
-          npm install --legacy-peer-deps
-      - name: Set Gradle wrapper permissions
-        script: |
-          chmod +x android/gradlew
-      - name: Build Android release
-        script: |
-          cd android
-          ./gradlew assembleRelease
-    artifacts:
-      - android/app/build/outputs/**/*.apk
-    publishing:
-      email:
-        recipients:
-          - kirolos.nakhla@jordanclouds.com
+scripts:
+  - name: Install dependencies
+    script: |
+      npm install --legacy-peer-deps
+  - name: Set Gradle wrapper permissions
+    script: |
+      chmod +x android/gradlew
+  - name: Verify native_modules.gradle exists
+    script: |
+      if [ ! -f node_modules/@react-native-community/cli-platform-android/native_modules.gradle ]; then
+        echo "native_modules.gradle is missing, npm install might have failed."
+        exit 1
+      fi
+  - name: Build Android release
+    script: |
+      cd android
+      ./gradlew assembleRelease
