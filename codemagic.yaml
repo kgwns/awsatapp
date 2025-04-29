@@ -8,10 +8,14 @@ workflows:
       node: 20
       java: 17
     scripts:
-      - name: Clean node_modules and reinstall
+      - name: Clean node_modules and reinstall dependencies
         script: |
           rm -rf node_modules package-lock.json
           npm install --legacy-peer-deps || { echo "npm install failed"; exit 1; }
+          npm install --save-dev @react-native-community/cli @react-native-community/cli-platform-android --legacy-peer-deps || { echo "npm install native modulesfailed"; exit 1; }
+      - name: Ensure @react-native-community/cli-platform-android is installed
+        script: |
+          npm install @react-native-community/cli-platform-android || { echo "Failed to install cli-platform-android"; exit 1; }
       - name: Set Gradle wrapper permissions
         script: |
           chmod +x android/gradlew
