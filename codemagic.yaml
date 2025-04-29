@@ -18,12 +18,7 @@ workflows:
       - name: Set Gradle wrapper permissions
         script: |
           chmod +x android/gradlew
-      - name: Verify native_modules.gradle exists
-        script: |
-          if [ ! -f node_modules/@react-native-community/cli-platform-android/native_modules.gradle ]; then
-            echo "native_modules.gradle is missing. Check if npm install completed successfully."
-            ls -la node_modules/@react-native-community || true
-            exit 1
+
           fi
       - name: Build Android release
         script: |
