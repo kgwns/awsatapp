@@ -11,6 +11,9 @@ workflows:
       - name: Install dependencies
         script: |
           npm install --legacy-peer-deps
+      - name: Set Gradle wrapper permissions
+        script: |
+          chmod +x android/gradlew
       - name: Build Android release
         script: |
           cd android
