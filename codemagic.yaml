@@ -5,8 +5,8 @@ workflows:
     environment:
       vars:
         NODE_ENV: production
-      node: 20.16.0
-      java: 17.0.12
+      node: 20
+      java: 17
     scripts:
       - name: Install dependencies
         script: |
