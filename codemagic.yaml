@@ -18,8 +18,6 @@ workflows:
       - name: Set Gradle wrapper permissions
         script: |
           chmod +x android/gradlew
-
-          fi
       - name: Build Android release
         script: |
           cd android
