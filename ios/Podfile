@@ -1,0 +1,114 @@
+source 'https://github.com/CocoaPods/Specs.git'
+
+# Resolve react_native_pods.rb with node to allow for hoisting
+require Pod::Executable.execute_command('node', ['-p',
+  'require.resolve(
+    "react-native/scripts/react_native_pods.rb",
+    {paths: [process.argv[1]]},
+  )', __dir__]).strip
+
+platform :ios, min_ios_version_supported
+prepare_react_native_project!
+
+linkage = ENV['USE_FRAMEWORKS']
+if linkage != nil
+  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
+  use_frameworks! :linkage => linkage.to_sym
+end
+
+$RNFirebaseAnalyticsWithoutAdIdSupport = true # toggle this to true for the no-ad-tracking Analytics subspec
+
+target 'Awsatapp' do
+  config = use_native_modules!
+
+  permissions_path = '../node_modules/react-native-permissions/ios'
+    
+  pod 'SwiftyUserDefaults', '~> 5.0'
+  pod 'SwiftyJSON', '~> 5.0'
+  pod 'Kingfisher', '~> 7.0'
+  pod 'ReachabilitySwift', '~> 3.2'
+  pod 'Alamofire', '~> 5.6'
+  pod 'SwiftLocation', '~> 4.0'
+
+  pod 'SVProgressHUD',      '~> 2.2.5'
+  pod 'CryptoSwift',        '~> 1.5'
+  pod 'DateToolsSwift',     '~> 4.0'
+  
+  pod 'Permission-LocationWhenInUse', :path => "#{permissions_path}/LocationWhenInUse"
+
+  pod 'Firebase', '~> 10.29.0', :modular_headers => true
+  pod 'FirebaseCore', '~> 10.29.0', :modular_headers => true
+  pod 'FirebaseCrashlytics', '~> 10.29.0', :modular_headers => true
+  pod 'FirebaseRemoteConfig', '~> 10.29.0', :modular_headers => true
+  pod 'FirebaseSessions', '~> 10.29.0', :modular_headers => true
+  pod 'FirebaseCoreInternal', '~> 10.29.0', :modular_headers => true
+  pod 'FirebaseInstallations', '~> 10.29.0', :modular_headers => true
+  pod 'GoogleDataTransport', '~> 9.2', :modular_headers => true
+  pod 'FirebaseABTesting', '~> 10.29.0', :modular_headers => true
+  pod 'FirebaseCoreExtension', '~> 10.29.0', :modular_headers => true
+  pod 'nanopb', '~> 2.0', :modular_headers => true
+  pod 'GoogleUtilities', '~> 7.8', :modular_headers => true
+  
+  pod 'RNScreens', :path => '../node_modules/react-native-screens'
+  pod 'Google-Mobile-Ads-SDK', '~> 11.2.0'
+  #pod 'Adjust', '~> 4.37.0'
+  
+  use_react_native!(
+    :path => config[:reactNativePath],
+    # Hermes is now enabled by default. Disable by setting this flag to false.
+    :hermes_enabled => false,
+    # Enables Flipper.
+    #
+    # Note that if you have use_frameworks! enabled, Flipper will not work and
+    # you should disable the next line.
+    #:flipper_configuration => flipper_config,
+    # An absolute path to your application root.
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
+  )
+
+  target 'AwsatappTests' do
+    inherit! :complete
+    # Pods for testing
+  end
+
+  post_install do |installer|
+    bitcode_strip_path = `xcrun --find bitcode_strip`.chop!
+    def strip_bitcode_from_framework(bitcode_strip_path, framework_relative_path)
+      framework_path = File.join(Dir.pwd, framework_relative_path)
+      command = "#{bitcode_strip_path} #{framework_path} -r -o #{framework_path}"
+      puts "Stripping bitcode: #{command}"
+      system(command)
+    end
+ 
+    framework_paths = [
+      "Pods/FBAEMKit/XCFrameworks/FBAEMKit.xcframework/ios-arm64/FBAEMKit.framework/FBAEMKit",
+      "Pods/FBSDKCoreKit/XCFrameworks/FBSDKCoreKit.xcframework/ios-arm64/FBSDKCoreKit.framework/FBSDKCoreKit",
+      "Pods/FBSDKCoreKit_Basics/XCFrameworks/FBSDKCoreKit_Basics.xcframework/ios-arm64/FBSDKCoreKit_Basics.framework/FBSDKCoreKit_Basics",
+      "Pods/FBSDKGamingServicesKit/XCFrameworks/FBSDKGamingServicesKit.xcframework/ios-arm64/FBSDKGamingServicesKit.framework/FBSDKGamingServicesKit",
+      "Pods/FBSDKLoginKit/XCFrameworks/FBSDKLoginKit.xcframework/ios-arm64/FBSDKLoginKit.framework/FBSDKLoginKit",
+      "Pods/FBSDKShareKit/XCFrameworks/FBSDKShareKit.xcframework/ios-arm64/FBSDKShareKit.framework/FBSDKShareKit"
+    ]
+ 
+    framework_paths.each do |framework_relative_path|
+      strip_bitcode_from_framework(bitcode_strip_path, framework_relative_path)
+    end
+
+    react_native_post_install(
+      installer,
+      config[:reactNativePath],
+      :mac_catalyst_enabled => false
+    )
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+      end
+    end
+  end
+end
+
+
+target 'AsharqalawsatNotificationExtension' do
+  pod 'Firebase/Messaging', '~> 10.29.0', :modular_headers => true
+  pod 'FirebaseCoreInternal', '~> 10.29.0', :modular_headers => true
+  pod 'GoogleUtilities', '~> 7.8', :modular_headers => true
+end
