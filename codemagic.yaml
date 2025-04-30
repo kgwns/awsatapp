@@ -17,6 +17,9 @@ workflows:
           npm install --save-dev @react-native-community/cli  --legacy-peer-deps || { echo "Failed to install cli-platform-android"; exit 1; }
           npm install  @react-native-community/cli-platform-android --legacy-peer-deps || { echo "Failed to install cli-platform-android"; exit 1; }
           ls -la node_modules/@react-native-community || true
+      - name: Check for native_modules.gradle path
+        script: |
+          find node_modules -name "native_modules.gradle"
       - name: Set Gradle wrapper permissions
         script: |
           chmod +x android/gradlew
